@@ -29,11 +29,11 @@ const settings = ["Profile", "Account", "Dashboard", "Logout"];
 function MenuAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  
+
   // Firebase Authentication
   const auth = getAuth();
   const user = auth.currentUser; // Get the current user
-  
+
   const navigate = useNavigate();
 
   const handleOpenNavMenu = (event) => {
@@ -58,12 +58,15 @@ function MenuAppBar() {
   };
 
   const handleLogout = () => {
-    auth.signOut().then(() => {
-      toast.success("Logged out successfully!");
-      navigate("/login"); // Redirect to login after logout
-    }).catch((error) => {
-      toast.error("Error logging out: " + error.message);
-    });
+    auth
+      .signOut()
+      .then(() => {
+        toast.success("Logged out successfully!");
+        navigate("/login"); // Redirect to login after logout
+      })
+      .catch((error) => {
+        toast.error("Error logging out: " + error.message);
+      });
   };
 
   return (
@@ -172,46 +175,27 @@ function MenuAppBar() {
 
           {/* USER MENU */}
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar
-                  alt={user?.email}
-                  src={user?.photoURL || ""}
-                  sx={{
-                    bgcolor: user?.photoURL ? "transparent" : deepPurple[500],
-                    color: "white",
-                    boxShadow: 3,
-                    transition: "transform 0.2s",
-                    "&:hover": { transform: "scale(1.1)" },
-                  }}
-                >
-                  {!user?.photoURL &&
-                    (
-                      user?.displayName?.charAt(0) ||
-                      user?.email?.charAt(0) ||
-                      "?"
-                    ).toUpperCase()}
-                </Avatar>
-              </IconButton>
+            <Tooltip title={user?.email || "User"}>
+              <Avatar
+                alt={user?.email}
+                src={user?.photoURL || ""}
+                sx={{
+                  bgcolor: user?.photoURL ? "transparent" : deepPurple[500],
+                  color: "white",
+                  boxShadow: 3,
+                  transition: "transform 0.2s",
+                  "&:hover": { transform: "scale(1.1)" },
+                  cursor: "default",
+                }}
+              >
+                {!user?.photoURL &&
+                  (
+                    user?.displayName?.charAt(0) ||
+                    user?.email?.charAt(0) ||
+                    "?"
+                  ).toUpperCase()}
+              </Avatar>
             </Tooltip>
-            <Menu
-              id="menu-user"
-              anchorEl={anchorElUser}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-              sx={{ mt: "45px" }}
-            >
-              {settings.map((setting) => (
-                <MenuItem
-                  key={setting}
-                  onClick={setting === "Logout" ? handleLogout : handleCloseUserMenu}
-                >
-                  <Typography textAlign="center">{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
         </Toolbar>
       </Container>
