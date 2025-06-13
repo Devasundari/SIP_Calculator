@@ -5,6 +5,7 @@ import path from 'path' // Import path module
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/', // Ensure this is correct for your deployment
   root: '.', // Ensure this is correct
   resolve: {
     alias: {
