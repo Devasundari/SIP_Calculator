@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: sip-calci 
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: sip-calci
+  template: 
+    metadata:
+      labels:
+        app: sip-calci
+    spec:
+      containers: 
+      - name: sip-calci
+        image: devasundari/sip-calci:5
+        ports:
+          - containerPort: 80
