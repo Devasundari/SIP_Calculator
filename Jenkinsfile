@@ -20,6 +20,23 @@ pipeline {
             }
         }
 
+        stage('Create Firebase Environment') {
+            steps {
+                withCredentials([string(
+                    credentialsId: 'firebase-env',
+                    variable: 'FIREBASE_ENV'
+                )]) {
+                    sh '''
+                        printf '%s\\n' "$FIREBASE_ENV" > .env
+                	echo "Firebase environment file created"
+                	test -s .env
+                	echo ".env exists and is not empty"
+                    '''
+                }
+            }
+        }
+
+
         stage('Build React App') {
             steps {
                 sh 'npm run build'
