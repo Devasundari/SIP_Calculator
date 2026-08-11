@@ -22,20 +22,32 @@ pipeline {
 
         stage('Create Firebase Environment') {
             steps {
-                withCredentials([string(
-                    credentialsId: 'firebase-env',
-                    variable: 'FIREBASE_ENV'
-                )]) {
-                    sh '''
-                        printf '%s\\n' "$FIREBASE_ENV" > .env
-                	echo "Firebase environment file created"
-                	test -s .env
-                	echo ".env exists and is not empty"
-                    '''
-                }
-            }
-        }
+        	withCredentials([
+            		string(credentialsId: 'firebase-api-key', variable: 'FIREBASE_API_KEY'),
+            		string(credentialsId: 'firebase-auth-domain', variable: 'FIREBASE_AUTH_DOMAIN'),
+            		string(credentialsId: 'firebase-project-id', variable: 'FIREBASE_PROJECT_ID'),
+            		string(credentialsId: 'firebase-storage-bucket', variable: 'FIREBASE_STORAGE_BUCKET'),
+          	        string(credentialsId: 'firebase-messaging-sender-id', variable: 'FIREBASE_MESSAGING_SENDER_ID'),
+            		string(credentialsId: 'firebase-app-id', variable: 'FIREBASE_APP_ID'),
+           	        string(credentialsId: 'firebase-measurement-id', variable: 'FIREBASE_MEASUREMENT_ID')
+       		 	]) {
+            		sh '''
+                	cat > .env <<EOF
+			VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY
+			VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN
+			VITE_FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
+			VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET
+			VITE_FIREBASE_MESSAGING_SENDER_ID=$FIREBASE_MESSAGING_SENDER_ID
+			VITE_FIREBASE_APP_ID=$FIREBASE_APP_ID
+			VITE_FIREBASE_MEASUREMENT_ID=$FIREBASE_MEASUREMENT_ID
+			EOF
 
+        	        echo "Firebase .env created"
+      	      	        test -s .env
+           	        '''
+       			 }
+    		}
+	}
 
         stage('Build React App') {
             steps {
