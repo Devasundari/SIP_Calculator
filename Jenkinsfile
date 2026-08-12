@@ -77,6 +77,21 @@ pipeline {
                 }
             }
         }
+        stage('Update Kubernetes Manifest') {
+            steps {
+                sh '''
+                    sed -i "s|image: devasundari/sip-calci:.*|image: devasundari/sip-calci:$IMAGE_TAG|" k8s/deployment.yml
+                    git config user.name "Devasundari"
+                    git confug user.email "sundarideva245@gmail.com"
+
+                    git add k8s/deployment.yml
+                    git commit -m "Update SIP calculator image to $IMAGE_TAG" || true
+                    git push origin HEAD:master
+
+                '''
+            }
+        }
+
     }
 
     post {
