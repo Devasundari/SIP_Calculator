@@ -79,19 +79,23 @@ pipeline {
         }
         stage('Update Kubernetes Manifest') {
             steps {
-                sh '''
-                    sed -i "s|image: devasundari/sip-calci:.*|image: devasundari/sip-calci:$IMAGE_TAG|" k8s/deployment.yml
-                    git config --global user.name "Devasundari"
-                    git config --global user.email "sundarideva245@gmail.com"
+		sshagent(['github-ssh']) {
+                    sh '''
+    	                sed -i "s|image: devasundari/sip-calci:.*|image: devasundari/sip-calci:$IMAGE_TAG|" k8s/deployment.yml
+        	        git config user.name "Devasundari"
+                        git config user.email "sundarideva245@gmail.com"
+    
+                        git add k8s/deployment.yml
+                    
+		    
+		        git commit -m "Update SIP calculator image to $IMAGE_TAG" || true
+                        git remote set-url origin git@github.com:Devasundari/SIP_Calculator.git
+		        git push origin HEAD:master
 
-                    git add k8s/deployment.yml
-                    git commit -m "Update SIP calculator image to $IMAGE_TAG" || true
-                    git push origin HEAD:master
-
-                '''
-            }
+                    '''
+               }
+           }
         }
-
     }
 
     post {
