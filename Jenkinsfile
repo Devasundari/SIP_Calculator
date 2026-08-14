@@ -42,6 +42,7 @@ pipeline {
                         "VITE_FIREBASE_MEASUREMENT_ID=$FIREBASE_MEASUREMENT_ID" > .env
 
                         echo "Firebase .env created"
+
                         test -s .env
                     '''
                 }
@@ -70,37 +71,61 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" \
+                            --password-stdin
+
                         docker push $IMAGE_NAME:$IMAGE_TAG
+
                         docker logout
                     '''
                 }
             }
         }
+
         stage('Update Kubernetes Manifest') {
             steps {
-		sshagent(['github-ssh']) {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'github-ssh',
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USERNAME'
+                    )
+                ]) {
                     sh '''
-    	                sed -i "s|image: devasundari/sip-calci:.*|image: devasundari/sip-calci:$IMAGE_TAG|" k8s/deployment.yml
-        	        git config user.name "Devasundari"
-                        git config user.email "sundarideva245@gmail.com"
-    
-                        git add k8s/deployment.yml
-                    
-		    
-		        git commit -m "Update SIP calculator image to $IMAGE_TAG" || true
-                        git remote set-url origin git@github.com:Devasundari/SIP_Calculator.git
-		        git push origin HEAD:master
+                        echo "Updating Kubernetes image tag..."
 
+                        sed -i "s|image: devasundari/sip-calci:.*|image: devasundari/sip-calci:$IMAGE_TAG|" k8s/deployment.yml
+
+                        echo "Updated deployment.yml:"
+                        grep "image:" k8s/deployment.yml
+
+                        git config user.name "Devasundari"
+                        git config user.email "sundarideva245@gmail.com"
+
+                        git add k8s/deployment.yml
+
+                        git commit -m "Update SIP calculator image to $IMAGE_TAG" || true
+
+                        mkdir -p ~/.ssh
+
+                        ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+                        git remote set-url origin git@github.com:Devasundari/SIP_Calculator.git
+
+                        GIT_SSH_COMMAND="ssh -i $SSH_KEY -o UserKnownHostsFile=$HOME/.ssh/known_hosts" \
+                        git push origin HEAD:master
                     '''
-               }
-           }
+                }
+            }
         }
     }
 
     post {
         success {
-            echo "Docker image pushed successfully!"
+            echo "Pipeline completed successfully!"
+            echo "Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "Kubernetes manifest updated successfully."
         }
 
         failure {
