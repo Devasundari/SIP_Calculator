@@ -14,6 +14,6 @@ spec:
     spec:
       containers: 
       - name: sip-calci
-        image: devasundari/sip-calci:37
+        image: devasundari/sip-calci:38
         ports:
           - containerPort: 80
